@@ -1,0 +1,44 @@
+From 3a099ad749cd725bd70170e7de9dcf1b20c74692 Mon Sep 17 00:00:00 2001
+From: Pawit Pornkitprasan <p.pawit@gmail.com>
+Date: Sun, 6 Dec 2015 02:31:24 -0500
+Subject: [PATCH] Fix crash on i9082
+
+vcos_named_sem: vcos_generic_named_semaphore_create: failed to create named semaphore name KhanSemaphore00000d260000000080000270 status 3 total refs 506 num sems 506
+chromium: [ERROR:gl_fence_egl.cc(50)] Failed to wait for EGLSync. error:EGL_BAD_PARAMETER
+chromium: [FATAL:gl_fence_egl.cc(52)] Check failed: g_ignore_egl_sync_failures.
+
+There's still the logcat spam though. Might need to look into a
+more proper fix in the future.
+
+Thanks for GHsR for pointing out the fix.
+---
+ gpu/config/gpu_driver_bug_list_json.cc | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/gpu/config/gpu_driver_bug_list.json b/gpu/config/gpu_driver_bug_list.json
+index 814d00e..5b95134 100644
+--- a/gpu/config/gpu_driver_bug_list.json
++++ b/gpu/config/gpu_driver_bug_list.json
+@@ -915,15 +915,14 @@ LONG_STRING_CONST(
+       "cr_bugs": [378691, 373360, 371530],
+       "description": "Testing fences was broken on Broadcom drivers",
+       "os": {
+-        "type": "android",
+-        "version": {
+-          "op": "<=",
+-          "value": "4.4.4"
+-        }
++        "type": "android"
+       },
+       "gl_vendor": "Broadcom.*",
+       "disabled_extensions": [
+         "EGL_KHR_fence_sync"
++      ],
++      "features": [
++        "ignore_egl_sync_failures"
+       ]
+     },
+     {
+-- 
+1.9.1
+
