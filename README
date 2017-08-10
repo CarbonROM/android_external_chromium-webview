@@ -30,7 +30,6 @@ in your GN argument file before building.
 
 Extra patches:
 patches/chromium-theme-color.patch: Provides a callback when a theme color is set by the page
-patches/0001-Fix-crash-on-i9082.patch: Patches compatibility with older Broadcom GPUs
 
 ------
 
