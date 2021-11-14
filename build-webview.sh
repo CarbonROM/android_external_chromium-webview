@@ -51,7 +51,7 @@ build() {
 while getopts ":a:chr:s" opt; do
     case $opt in
         a) for arch in ${supported_archs[@]}; do
-               [ "$OPTARG" '==' "$arch" ] && build_arch="$OPTARG" || ((arch_try++))
+               [ "$OPTARG" '==' "$arch" ] && build_arch="$OPTARG" || ((arch_try=arch_try+1))
            done
            if [ $arch_try -eq ${#supported_archs[@]} ]; then
                echo "Unsupported ARCH: $OPTARG"
@@ -62,6 +62,11 @@ while getopts ":a:chr:s" opt; do
         c) clean=1 ;;
         h) usage ;;
         r) version=(${OPTARG//:/ })
+           if [ ${#version[@]} -ne 2 ]; then
+               # Hardcode this version to serve as an example, the above can be overriden
+               echo "Versions should be specificed like so: $0 -r 95.0.4638.74:4638074"
+               exit 1
+           fi
            chromium_version=$version[1]
            chromium_code=$version[2]
            ;;
