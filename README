@@ -9,7 +9,7 @@ https://www.chromium.org/developers/how-tos/build-instructions-android-webview
 ARM/ARM64
 
 The prebuilt libwebviewchromium.so included in these APKs is built from Chromium
-release tag 95.0.4638.50, using the GN build tool. To match our build settings, set:
+release tag 96.0.4664.111, using the GN build tool. To match our build settings, set:
 
 target_os = "android"
 is_debug = false
@@ -30,8 +30,8 @@ disable_autofill_assistant_dfm = true
 disable_tab_ui_dfm = true
 enable_gvr_services = false
 disable_fieldtrial_testing_config = true
-android_default_version_name = "95.0.4638.50"
-android_default_version_code = "4638050$$"
+android_default_version_name = "96.0.4664.111"
+android_default_version_code = "4664111$$"
 
 $$ depends on device ARCH
 (00=arm, 50=arm64, 10=x86, 60=x64)
@@ -43,7 +43,7 @@ in your GN argument file before building.
 X86/X86_64
 
 The prebuilt libwebviewchromium.so included in these APKs is built from Chromium
-release tag 93.0.4577.82, using the GN build tool. To match our build settings, set:
+release tag 96.0.4664.111, using the GN build tool. To match our build settings, set:
 
 target_os = "android"
 is_debug = false
@@ -63,9 +63,9 @@ dfmify_dev_ui = false
 disable_autofill_assistant_dfm = true
 disable_tab_ui_dfm = true
 enable_gvr_services = false
-fieldtrial_testing_like_official_build = true
-android_default_version_name = "93.0.4577.82"
-android_default_version_code = "4577082$$"
+disable_fieldtrial_testing_config = true
+android_default_version_name = "96.0.4664.111"
+android_default_version_code = "4664111$$"
 
 $$ depends on device ARCH
 (00=arm, 50=arm64, 10=x86, 60=x64)

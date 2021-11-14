@@ -2,8 +2,8 @@
 
 set -e
 
-chromium_version="95.0.4638.74"
-chromium_code="4638074"
+chromium_version="96.0.4664.111"
+chromium_code="4664111"
 clean=0
 gsync=0
 supported_archs=(arm arm64 x86 x64)
@@ -44,11 +44,8 @@ build() {
     ninja -C out/$1 system_webview_apk
     if [ "$?" -eq 0 ]; then
         [ "$1" '==' "x64" ] && android_arch="x86_64" || android_arch=$1
-        cp out/$1/apks/SystemWebView.apk ../prebuilt/$android_arch/webview.apk
-        cd ..
-        git add prebuilt/$android_arch/webview.apk
-        git commit -S -m "Update $android_arch webview to Chromium $chromium_version"
-        cd -
+        xz -9 -c out/$1/apks/SystemWebView.apk -e -T 0 > ../prebuilt/$android_arch/webview.apk.xz
+        git add ../prebuilt/$android_arch/webview.apk.xz
     fi
 }
 
@@ -116,7 +113,7 @@ cp chrome/android/java/res_chromium_base/mipmap-xxxhdpi/app_icon.png android_web
 
 # Apply our patches
 if [ $gsync -eq 1 ]; then
-    git am ./patches/*
+    git am ../patches/*
 fi
 
 # Build args
