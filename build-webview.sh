@@ -44,7 +44,9 @@ build() {
     ninja -C out/$1 system_webview_apk
     if [ "$?" -eq 0 ]; then
         [ "$1" '==' "x64" ] && android_arch="x86_64" || android_arch=$1
-        cp out/$1/apks/SystemWebView.apk ../android_external_chromium-webview/prebuilt/$android_arch/webview.apk
+        cp out/$1/apks/SystemWebView.apk ./prebuilt/$android_arch/webview.apk
+        git add ./prebuilt/$android_arch/webview.apk
+        git commit -S -m "Update $android_arch webview to Chromium $chromium_version"
     fi
 }
 
@@ -85,11 +87,6 @@ while getopts ":a:chr:s" opt; do
 done
 shift $((OPTIND-1))
 
-# Download android_external_chromium-webview
-if [ ! -d android_external_chromium-webview ]; then
-    git clone https://github.com/LineageOS/android_external_chromium-webview.git --depth 1
-fi
-
 # Add depot_tools to PATH
 if [ ! -d depot_tools ]; then
     git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
@@ -117,7 +114,7 @@ cp chrome/android/java/res_chromium_base/mipmap-xxxhdpi/app_icon.png android_web
 
 # Apply our patches
 if [ $gsync -eq 1 ]; then
-    git am ../android_external_chromium-webview/patches/*
+    git am ./patches/*
 fi
 
 # Build args
