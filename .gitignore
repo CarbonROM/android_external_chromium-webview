@@ -1,0 +1,6 @@
+out/
+src/
+depot_tools/
+.cipd/
+.gclient
+.gclient_entries
