@@ -101,7 +101,11 @@ if [ $gsync -eq 1 ]; then
     find src -name index.lock -delete
     yes | gclient sync -R -r $chromium_version
 fi
+
 cd src
+
+./build/install-build-deps-android.sh
+./build/install-build-deps.sh --no-prompt --arm --lib32 --no-chromeos-fonts --no-syms --no-backwards-compatible
 
 # Replace webview icon
 mkdir -p android_webview/nonembedded/java/res_icon/drawable-xxxhdpi
