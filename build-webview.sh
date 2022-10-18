@@ -45,7 +45,6 @@ build() {
     if [ "$?" -eq 0 ]; then
         [ "$1" '==' "x64" ] && android_arch="x86_64" || android_arch=$1
         xz -9 -c out/$1/apks/SystemWebView.apk -e -T 0 > ../prebuilt/$android_arch/webview.apk.xz
-        git add ../prebuilt/$android_arch/webview.apk.xz
     fi
 }
 
