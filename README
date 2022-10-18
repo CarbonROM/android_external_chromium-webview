@@ -4,6 +4,8 @@ now be built entirely from the Chromium source code.
 General instructions for building WebView from Chromium:
 https://www.chromium.org/developers/how-tos/build-instructions-android-webview
 
+Useful link for versions: https://chromiumdash.appspot.com/releases?platform=Android
+
 ------
 
 ARM/ARM64
