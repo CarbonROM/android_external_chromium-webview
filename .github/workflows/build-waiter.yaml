@@ -1,0 +1,121 @@
+name: Build Waiter
+
+on:
+  push:
+    paths:
+      - '!prebuilt/**'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Wait 2 minutes for the Terraform pipeline to begin
+        run: sleep 120
+
+      - name: Wait for Terraform apply to finish
+        env:
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+        run: |
+          HAS_RUN=1
+          until [ $HAS_RUN -eq 0 ]
+          do
+            echo "Sleeping 5s"
+            sleep 5
+            echo "Checking for run completion..."
+            curl \
+              -fSsL \
+              --header "Authorization: Bearer $TF_API_TOKEN" \
+              --header "Content-Type: application/vnd.api+json" \
+              --request GET \
+              https://app.terraform.io/api/v2/workspaces/ws-DsfsrdKw3b8S9ptL/runs -o output.json
+
+            LHAS_RUN=0
+            while read i
+            do
+                STATUS=$(echo $i | jq -r .attributes.status)
+                if [ "$STATUS" != "applied" ]
+                then
+                  LHAS_RUN=1
+                fi
+            done <<< "$(jq -c '.data[]' output.json)"
+            HAS_RUN=$LHAS_RUN
+          done
+          echo "Runs have completed"
+
+      - name: Terraform Init
+        run: cd terraform-builder && terraform init
+
+      - name: Collect CI outputs from Terraform
+        id: outputs
+        run: |
+          cd terraform-builder
+          echo ::set-output name=aws_access_key_id::"$(terraform output -raw ci_aws_access_key_id)"
+          echo ::set-output name=aws_secret_access_key::"$(terraform output -raw ci_aws_secret_access_key)"
+          echo ::set-output name=s3_outputs::"$(terraform output -json s3_outputs)"
+          echo ::set-output name=chrome_version::"$(terraform output -raw chrome_version)"
+          echo ::set-output name=bucket_name::"$(terraform output -raw bucket_name)"
+
+      - name: Wait for S3 outputs
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.outputs.outputs.aws_access_key_id }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.outputs.outputs.aws_secret_access_key }}
+          S3_OUTPUTS: ${{ steps.outputs.outputs.s3_outputs }}
+          BUCKET_NAME: ${{ steps.outputs.outputs.bucket_name }}
+        run: |
+          echo "${S3_OUTPUTS}" > output.json
+          while read i
+          do
+              S3_OUTPUT=$(echo $i | jq -r .)
+              tail=${S3_OUTPUT##*-}
+              arch=${tail%".apk.xz"}
+              if [ "$arch" == "x64" ]
+              then
+                arch=x86_64
+              fi
+
+              while aws s3api head-object --bucket "${BUCKET_NAME}" --key "${S3_OUTPUT}" >/dev/null 2>&1; ss=$?; [[ $ss -ne 0 ]]
+              do
+                echo "Waiting for s3://${BUCKET_NAME}/${S3_OUTPUT}"
+                sleep 3
+              done
+              aws s3 cp "s3://${BUCKET_NAME}/${S3_OUTPUT}" "./prebuilt/${arch}/webview.apk.xz"
+          done <<< "$(jq -c '.[]' output.json)"
+
+      - name: Terraform Destroy
+        run: cd terraform-builder && terraform destroy -auto-approve -input=false
+
+      - name: Setup GPG key
+        uses: crazy-max/ghaction-import-gpg@v5
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Push to Gerrit
+        env:
+          GERRIT_PUSH_PRIVATE_KEY_B64: ${{ secrets.GERRIT_PUSH_PRIVATE_KEY_B64 }}
+          CHROME_VERSION: ${{ steps.outputs.outputs.chrome_version }}
+        run: |
+          echo "$GERRIT_PUSH_PRIVATE_KEY_B64" | base64 -d > gerrit.pem
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          mv gerrit.pem ~/.ssh
+          chmod 400 ~/.ssh/gerrit.pem
+
+          git config user.name "CarbonROM Webview CI Bot"
+          git config user.email "carbonrom_webview_ci_bot@mcswain.dev"
+          git config user.signingkey CA037F9A5346B3BC93D07696A1FC71D1C08112FD
+          git config commit.gpgsign true
+          git config push.gpgsign true
+          git config review.review.carbonrom.org.username "CarbonROM-Webview-CI-Bot"
+
+          git add prebuilt/
+          git commit -m "Update APKs to $CHROME_VERSION"
+          git push ssh://review.carbonrom.org:29418/CarbonROM/android_external_chromium-webview HEAD:refs/for/${GITHUB_REF##*/}
