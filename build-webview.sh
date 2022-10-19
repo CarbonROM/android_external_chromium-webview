@@ -101,7 +101,7 @@ fi
 
 if [ $gsync -eq 1 ]; then
     find src -name index.lock -delete
-    yes | gclient sync -vvv -R -r $chromium_version
+    yes | gclient sync -vvv -R -r $chromium_version --force --reset
 fi
 
 cd src
