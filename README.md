@@ -1,3 +1,12 @@
+# WARNING
+# READ THIS BEFORE PUSHING
+# WARNING
+# READ THIS BEFORE PUSHINGN
+
+Pushes to `external/chromium-webview` need to be done carefully. It doesn't track AOSP, it tracks Chromium stable, so pushes shouldn't be common, BUT any pushes not done properly will cost a significant amount money in AWS. If we want a new build of Chromium webview to be generated, push as normal, but if a build shouldn't trigger, like as a result of a README update, add [skip ci] or something similar to your commit title to avoid spinning up the servers to fire of a redundant build. The commit message doesn't have to include [skip ci] exactly, see <https://github.blog/changelog/2021-02-08-github-actions-skip-pull-request-and-push-workflows-with-skip-ci/>
+
+------
+
 Building the Chromium-based WebView in AOSP is no longer supported. WebView can
 now be built entirely from the Chromium source code.
 
