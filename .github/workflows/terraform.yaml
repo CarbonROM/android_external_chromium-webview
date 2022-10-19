@@ -1,0 +1,36 @@
+name: Terraform
+
+on:
+  push:
+    paths:
+      - '!prebuilt/**'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Format
+        run: cd terraform-builder && terraform fmt -check
+
+      - name: Terraform Init
+        run: cd terraform-builder && terraform init
+
+      - name: Terraform Validate
+        run: cd terraform-builder && terraform validate -no-color
+
+      - name: Terraform Destroy old infra
+        run: cd terraform-builder && terraform destroy -auto-approve -input=false
+
+      - name: Terraform Plan
+        run: cd terraform-builder && terraform plan -no-color -input=false
+
+      - name: Terraform Apply
+        run: cd terraform-builder && terraform apply -auto-approve -input=false
