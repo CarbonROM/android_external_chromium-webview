@@ -4,3 +4,4 @@ depot_tools/
 .cipd/
 .gclient
 .gclient_entries
+packer/
