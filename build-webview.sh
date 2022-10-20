@@ -6,6 +6,7 @@ chromium_version="106.0.5249.126"
 chromium_code="5249126"
 clean=0
 gsync=0
+skip_build=0
 supported_archs=(arm arm64 x86 x64)
 
 usage() {
@@ -18,6 +19,7 @@ usage() {
     echo "    -h Show this message"
     echo "    -r <release> Specify chromium release"
     echo "    -s Sync"
+    echo "    -b Skip build"
     echo
     echo "  Example:"
     echo "    build_webview -c -r $chromium_version:$chromium_code"
@@ -48,7 +50,7 @@ build() {
     fi
 }
 
-while getopts ":a:chr:s" opt; do
+while getopts ":a:chr:s:b" opt; do
     case $opt in
         a) for arch in ${supported_archs[@]}; do
                [ "$OPTARG" '==' "$arch" ] && build_arch="$OPTARG" || ((arch_try=arch_try+1))
@@ -71,6 +73,7 @@ while getopts ":a:chr:s" opt; do
            chromium_code=${version[1]}
            ;;
         s) gsync=1 ;;
+        b) skip_build=1 ;;
         :)
           echo "Option -$OPTARG requires an argument"
           echo
@@ -149,8 +152,10 @@ args+=' android_default_version_name="'$chromium_version'"'
 if [ -n "$build_arch" ]; then
     build $build_arch
 else
+  if [ $skip_build -eq 0 ]; then
     build arm
     build arm64
     build x86
     build x64
+  fi
 fi
