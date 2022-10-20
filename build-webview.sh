@@ -50,7 +50,7 @@ build() {
     fi
 }
 
-while getopts ":a:chr:s:b" opt; do
+while getopts ":a:chr:sb" opt; do
     case $opt in
         a) for arch in ${supported_archs[@]}; do
                [ "$OPTARG" '==' "$arch" ] && build_arch="$OPTARG" || ((arch_try=arch_try+1))
@@ -96,12 +96,12 @@ export PATH="$(pwd -P)/depot_tools:$PATH"
 
 if [ ! -d src ]; then
     fetch android
-    yes | gclient sync -D -R -r $chromium_version
+    yes | gclient sync -vvv -D -R -r $chromium_version
 fi
 
 if [ $gsync -eq 1 ]; then
     find src -name index.lock -delete
-    yes | gclient sync -R -r $chromium_version
+    yes | gclient sync -vvv -R -r $chromium_version
 fi
 
 cd src
@@ -152,7 +152,7 @@ args+=' android_default_version_name="'$chromium_version'"'
 if [ -n "$build_arch" ]; then
     build $build_arch
 else
-  if [ $skip_build -eq 0 ]; then
+  if [ $skip_build -ne 1 ]; then
     build arm
     build arm64
     build x86
