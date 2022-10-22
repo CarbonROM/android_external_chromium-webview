@@ -30,11 +30,11 @@ jobs:
         id: outputs
         run: |
           cd terraform-builder
-          echo ::set-output name=aws_access_key_id::"$(terraform output -raw ci_aws_access_key_id)"
-          echo ::set-output name=aws_secret_access_key::"$(terraform output -raw ci_aws_secret_access_key)"
-          echo ::set-output name=s3_outputs::"$(terraform output -json s3_outputs)"
-          echo ::set-output name=chrome_version::"$(terraform output -raw chrome_version)"
-          echo ::set-output name=bucket_name::"$(terraform output -raw bucket_name)"
+          run: echo "aws_access_key_id=$(terraform output -raw ci_aws_access_key_id)" >> $GITHUB_OUTPUT
+          run: echo "aws_secret_access_key=$(terraform output -raw ci_aws_secret_access_key)" >> $GITHUB_OUTPUT
+          run: echo "s3_outputs='$(terraform output -json s3_outputs)'" >> $GITHUB_OUTPUT
+          run: echo "chrome_version=$(terraform output -raw chrome_version)" >> $GITHUB_OUTPUT
+          run: echo "bucket_name=$(terraform output -raw bucket_name)" >> $GITHUB_OUTPUT
 
       - name: Wait for S3 outputs
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
