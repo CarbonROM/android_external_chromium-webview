@@ -7,7 +7,7 @@ variable "chrome_version" {
 variable "architectures_to_build" {
   type        = list(string)
   description = "The architectures to build"
-  default     = ["arm", "arm64", "x86", "x64"]
+  default     = ["arm", "x86", "arm64", "x64"]
 }
 
 variable "instance_type" {
