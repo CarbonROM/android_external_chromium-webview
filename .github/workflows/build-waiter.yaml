@@ -30,9 +30,11 @@ jobs:
         id: outputs
         run: |
           cd terraform-builder
-          echo "aws_access_key_id=$(terraform output -raw ci_aws_access_key_id)\n" >> $GITHUB_OUTPUT
-          echo "aws_secret_access_key=$(terraform output -raw ci_aws_secret_access_key)\n" >> $GITHUB_OUTPUT
-          echo "s3_outputs=$(terraform output -json s3_outputs)\n" >> $GITHUB_OUTPUT
+          echo "aws_access_key_id=$(terraform output -raw ci_aws_access_key_id)" >> $GITHUB_OUTPUT
+          echo "aws_secret_access_key=$(terraform output -raw ci_aws_secret_access_key)" >> $GITHUB_OUTPUT
+          echo "s3_outputs<<EOF" >> $GITHUB_OUTPUT
+          echo "$(terraform output -json s3_outputs)" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           echo "chrome_version=$(terraform output -raw chrome_version)\n" >> $GITHUB_OUTPUT
           echo "bucket_name=$(terraform output -raw bucket_name)\n" >> $GITHUB_OUTPUT
         continue-on-error: true
