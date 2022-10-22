@@ -1,9 +1,7 @@
 name: Terraform
 
 on:
-  push:
-    paths:
-      - '!prebuilt/**'
+  workflow_dispatch:
 
 jobs:
   terraform:
