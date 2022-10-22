@@ -35,6 +35,7 @@ jobs:
           echo "s3_outputs='$(terraform output -json s3_outputs)'" >> $GITHUB_OUTPUT
           echo "chrome_version=$(terraform output -raw chrome_version)" >> $GITHUB_OUTPUT
           echo "bucket_name=$(terraform output -raw bucket_name)" >> $GITHUB_OUTPUT
+        continue-on-error: true
 
       - name: Wait for S3 outputs
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -62,6 +63,7 @@ jobs:
               done
               aws s3 cp "s3://${BUCKET_NAME}/${S3_OUTPUT}" "./prebuilt/${arch}/webview.apk.xz"
           done <<< "$(jq -c '.[]' output.json)"
+        continue-on-error: true
 
       - name: Terraform Destroy
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
