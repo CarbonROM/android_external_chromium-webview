@@ -59,7 +59,7 @@ jobs:
                 arch=x86_64
               fi
 
-              while aws s3api head-object --bucket "${BUCKET_NAME}" --key "${S3_OUTPUT}" >/dev/null 2>&1; ss=$?; [[ $ss -ne 0 ]]
+              while aws s3api head-object --bucket "${BUCKET_NAME}" --key "${S3_OUTPUT}"; ss=$?; [[ $ss -ne 0 ]]
               do
                 echo "Waiting for s3://${BUCKET_NAME}/${S3_OUTPUT}"
                 sleep 3
