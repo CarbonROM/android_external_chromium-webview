@@ -1,27 +1,62 @@
-# WARNING
-# READ THIS BEFORE PUSHING
-# WARNING
-# READ THIS BEFORE PUSHINGN
+# Chromium Android System Webview
 
-Pushes to `external/chromium-webview` need to be done carefully. It doesn't track AOSP, it tracks Chromium stable, so pushes shouldn't be common, BUT any pushes not done properly will cost a significant amount money in AWS. If we want a new build of Chromium webview to be generated, push as normal, but if a build shouldn't trigger, like as a result of a README update, add [skip ci] or something similar to your commit title to avoid spinning up the servers to fire of a redundant build. The commit message doesn't have to include [skip ci] exactly, see <https://github.blog/changelog/2021-02-08-github-actions-skip-pull-request-and-push-workflows-with-skip-ci/>
+## How can I find the current release branches?
 
-------
+The current release branches can be found at <https://chromiumdash.appspot.com/releases?platform=Android>
 
-Building the Chromium-based WebView in AOSP is no longer supported. WebView can
-now be built entirely from the Chromium source code.
+## How can I find the future release dates of stable versions?
+
+The release dates of future Chromium versions is at <https://chromiumdash.appspot.com/schedule>. Stable Release is the date desired.
+
+## Building with CI
+
+### Cutting a new release
+
+This repo contains the appropriate CI configuration to allow Chromium Webview to be built automatically. This requires some manual work, but the longest and hardest effort has been automated.
+
+#### Expressing intent to build a new version
+
+The current release branches can be found at <https://chromiumdash.appspot.com/releases?platform=Android>. Obtain the branch (expect a version number like `106.0.5249.126`), and the Chromium version shortcode (the last two sets of numbers without dots, e.g. `5249126`).
+
+Place the new version and shortcode in the following places:
+
+- `build-webview.sh` in `chromium_version` and `chromium_code`
+- `README.md` twice each under the [ARM/ARM64](#armarm64) and [X86/X86_64](#x86x8664) sections
+- `terraform-builder/variables.tf` in `chrome_version`
+
+#### Actually building the new version
+
+Commit these changes and push to Gerrit. After review and submission, return to the GitHub repository and navigate to Actions -> Terraform or use this direct link <https://github.com/CarbonROM/android_external_chromium-webview/actions/workflows/terraform.yaml>.
+
+There will be a box that says
+
+> This workflow has a `workflow_dispatch` event trigger.
+
+There is a button that says `Run workflow` in the right side of this box. Click it and choose the appropriate Carbon branch, then click the green `Run workflow` button.
+
+A Terraform job will be created that will create building infrastructure in AWS. After the Terraform run, the Build Waiter CI script will come up and wait for the Chromium Webview APK outputs and will send them as a commit to Gerrit. If the original Terraform run fails for any reason, Build Waiter will come up to destroy any infrastructure that happened to be made.
+
+Once the Gerrit commit is pushed, merge it to update the prebuilt binaries.
+
+As the Chromium Git history gets longer, the base AMI image that contains the source will need to be updated. This is because the base image pre-syncs Chromium in order to save time during the builds. To update the base AMI, see [CarbonROM/android_external_chromium-webview_packer](https://github.com/CarbonROM/android_external_chromium-webview_packer) which has it's own README and CI.
+
+## Building Manually
+
+### Note
+
+Building the Chromium-based WebView in AOSP is no longer supported. WebView can now be built entirely from the Chromium source code.
 
 General instructions for building WebView from Chromium:
-https://www.chromium.org/developers/how-tos/build-instructions-android-webview
+<https://www.chromium.org/developers/how-tos/build-instructions-android-webview>
 
-Useful link for versions: https://chromiumdash.appspot.com/releases?platform=Android
+For questions about building WebView, please see
+<https://groups.google.com/a/chromium.org/forum/#!forum/android-webview-dev>
 
-------
+### ARM/ARM64
 
-ARM/ARM64
+The prebuilt `libwebviewchromium.so` included in these APKs is built from Chromium release tag `106.0.5249.126`, using the GN build tool. To match our build settings, set the following in your GN argument file before building:
 
-The prebuilt libwebviewchromium.so included in these APKs is built from Chromium
-release tag 106.0.5249.126, using the GN build tool. To match our build settings, set:
-
+```
 target_os = "android"
 is_debug = false
 is_official_build = true
@@ -43,19 +78,17 @@ enable_gvr_services = false
 disable_fieldtrial_testing_config = true
 android_default_version_name = "106.0.5249.126"
 android_default_version_code = "5249126$$"
+```
 
-$$ depends on device ARCH
+`$$` depends on device architecture:
 (00=arm, 50=arm64, 10=x86, 60=x64)
 
-in your GN argument file before building.
-
-------
-
-X86/X86_64
+### X86/X86_64
 
 The prebuilt libwebviewchromium.so included in these APKs is built from Chromium
-release tag 106.0.5249.126, using the GN build tool. To match our build settings, set:
+release tag 106.0.5249.126, using the GN build tool. To match our build settings, set the following in your GN argument file before building:
 
+```
 target_os = "android"
 is_debug = false
 is_official_build = true
@@ -77,31 +110,30 @@ enable_gvr_services = false
 disable_fieldtrial_testing_config = true
 android_default_version_name = "106.0.5249.126"
 android_default_version_code = "5249126$$"
+```
 
-$$ depends on device ARCH
+`$$` depends on device architecture:
 (00=arm, 50=arm64, 10=x86, 60=x64)
 
-in your GN argument file before building.
+### Replace webview icon
 
-------
+From the `src` directory:
 
-Replace webview icon:
-
-From the chromium/src directory:
-
+```bash
 mkdir -p android_webview/apk/java/res/drawable-xxxhdpi
 cp chrome/android/java/res_chromium/mipmap-mdpi/app_icon.png android_webview/apk/java/res/drawable-mdpi/icon_webview.png
 cp chrome/android/java/res_chromium/mipmap-hdpi/app_icon.png android_webview/apk/java/res/drawable-hdpi/icon_webview.png
 cp chrome/android/java/res_chromium/mipmap-xhdpi/app_icon.png android_webview/apk/java/res/drawable-xhdpi/icon_webview.png
 cp chrome/android/java/res_chromium/mipmap-xxhdpi/app_icon.png android_webview/apk/java/res/drawable-xxhdpi/icon_webview.png
 cp chrome/android/java/res_chromium/mipmap-xxxhdpi/app_icon.png android_webview/apk/java/res/drawable-xxxhdpi/icon_webview.png
+```
 
-------
+### Apply patches
 
-Extra patches:
-patches/chromium-theme-color.patch: Provides a callback when a theme color is set by the page
+From the `src` directory:
 
-------
+```bash
+git am ../patches/*
+```
 
-For questions about building WebView, please see
-https://groups.google.com/a/chromium.org/forum/#!forum/android-webview-dev
+Then, you may build following Chromium's instructions.
