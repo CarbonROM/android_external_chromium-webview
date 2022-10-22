@@ -37,3 +37,7 @@ output "bucket_name" {
 output "chrome_version" {
   value = var.chrome_version
 }
+
+output "aws_region" {
+  value = var.region
+}
