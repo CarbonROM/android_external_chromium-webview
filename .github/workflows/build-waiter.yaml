@@ -1,9 +1,10 @@
 name: Build Waiter
 
 on:
-  push:
-    paths:
-      - '!prebuilt/**'
+  workflow_run:
+    workflows: [Terraform]
+    types:
+      - completed
 
 jobs:
   terraform:
@@ -17,43 +18,15 @@ jobs:
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - name: Wait 2 minutes for the Terraform pipeline to begin
-        run: sleep 120
-
-      - name: Wait for Terraform apply to finish
-        env:
-          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
-        run: |
-          HAS_RUN=1
-          until [ $HAS_RUN -eq 0 ]
-          do
-            echo "Sleeping 5s"
-            sleep 5
-            echo "Checking for run completion..."
-            curl \
-              -fSsL \
-              --header "Authorization: Bearer $TF_API_TOKEN" \
-              --header "Content-Type: application/vnd.api+json" \
-              --request GET \
-              https://app.terraform.io/api/v2/workspaces/ws-DsfsrdKw3b8S9ptL/runs -o output.json
-
-            LHAS_RUN=0
-            while read i
-            do
-                STATUS=$(echo $i | jq -r .attributes.status)
-                if [ "$STATUS" != "applied" ]
-                then
-                  LHAS_RUN=1
-                fi
-            done <<< "$(jq -c '.data[]' output.json)"
-            HAS_RUN=$LHAS_RUN
-          done
-          echo "Runs have completed"
-
       - name: Terraform Init
         run: cd terraform-builder && terraform init
 
+      - name: Terraform destroy if apply failure
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        run: cd terraform-builder && terraform destroy -auto-approve -input=false
+
       - name: Collect CI outputs from Terraform
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         id: outputs
         run: |
           cd terraform-builder
@@ -64,6 +37,7 @@ jobs:
           echo ::set-output name=bucket_name::"$(terraform output -raw bucket_name)"
 
       - name: Wait for S3 outputs
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         env:
           AWS_ACCESS_KEY_ID: ${{ steps.outputs.outputs.aws_access_key_id }}
           AWS_SECRET_ACCESS_KEY: ${{ steps.outputs.outputs.aws_secret_access_key }}
@@ -90,15 +64,18 @@ jobs:
           done <<< "$(jq -c '.[]' output.json)"
 
       - name: Terraform Destroy
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         run: cd terraform-builder && terraform destroy -auto-approve -input=false
 
       - name: Setup GPG key
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         uses: crazy-max/ghaction-import-gpg@v5
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Push to Gerrit
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         env:
           GERRIT_PUSH_PRIVATE_KEY_B64: ${{ secrets.GERRIT_PUSH_PRIVATE_KEY_B64 }}
           CHROME_VERSION: ${{ steps.outputs.outputs.chrome_version }}
