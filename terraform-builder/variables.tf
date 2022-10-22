@@ -19,6 +19,7 @@ variable "instance_type" {
 variable "bucket_name" {
   type        = string
   description = "The name of the S3 bucket to use for the build output"
+  default     = "carbonrom-webview-out"
 }
 
 variable "parallel" {
