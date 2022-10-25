@@ -95,6 +95,7 @@ jobs:
           chmod 700 ~/.ssh
           mv gerrit.pem ~/.ssh
           chmod 400 ~/.ssh/gerrit.pem
+          ssh-keyscan -t rsa -p 29418 review.carbonrom.org >> ~/.ssh/known_hosts
 
           git config user.name "CarbonROM Webview CI Bot"
           git config user.email "carbonrom_webview_ci_bot@mcswain.dev"
