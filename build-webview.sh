@@ -2,8 +2,8 @@
 
 set -e
 
-chromium_version="106.0.5249.126"
-chromium_code="5249126"
+chromium_version="107.0.5304.54"
+chromium_code="5304054"
 clean=0
 gsync=0
 skip_build=0

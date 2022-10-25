@@ -1,7 +1,7 @@
 variable "chrome_version" {
   type        = string
   description = "The version of Chrome to build"
-  default     = "106.0.5249.126"
+  default     = "107.0.5304.54"
 }
 
 variable "architectures_to_build" {

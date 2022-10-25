@@ -16,7 +16,7 @@ This repo contains the appropriate CI configuration to allow Chromium Webview to
 
 #### Expressing intent to build a new version
 
-The current release branches can be found at <https://chromiumdash.appspot.com/releases?platform=Android>. Obtain the branch (expect a version number like `106.0.5249.126`), and the Chromium version shortcode (the last two sets of numbers without dots, e.g. `5249126`).
+The current release branches can be found at <https://chromiumdash.appspot.com/releases?platform=Android>. Obtain the branch (expect a version number like `107.0.5304.54`), and the Chromium version shortcode (the last two sets of numbers without dots, e.g. `5304054`).
 
 Place the new version and shortcode in the following places:
 
@@ -54,7 +54,7 @@ For questions about building WebView, please see
 
 ### ARM/ARM64
 
-The prebuilt `libwebviewchromium.so` included in these APKs is built from Chromium release tag `106.0.5249.126`, using the GN build tool. To match our build settings, set the following in your GN argument file before building:
+The prebuilt `libwebviewchromium.so` included in these APKs is built from Chromium release tag `107.0.5304.54`, using the GN build tool. To match our build settings, set the following in your GN argument file before building:
 
 ```
 target_os = "android"
@@ -76,8 +76,8 @@ disable_autofill_assistant_dfm = true
 disable_tab_ui_dfm = true
 enable_gvr_services = false
 disable_fieldtrial_testing_config = true
-android_default_version_name = "106.0.5249.126"
-android_default_version_code = "5249126$$"
+android_default_version_name = "107.0.5304.54"
+android_default_version_code = "5304054$$"
 ```
 
 `$$` depends on device architecture:
@@ -86,7 +86,7 @@ android_default_version_code = "5249126$$"
 ### X86/X86_64
 
 The prebuilt libwebviewchromium.so included in these APKs is built from Chromium
-release tag 106.0.5249.126, using the GN build tool. To match our build settings, set the following in your GN argument file before building:
+release tag 107.0.5304.54, using the GN build tool. To match our build settings, set the following in your GN argument file before building:
 
 ```
 target_os = "android"
@@ -108,8 +108,8 @@ disable_autofill_assistant_dfm = true
 disable_tab_ui_dfm = true
 enable_gvr_services = false
 disable_fieldtrial_testing_config = true
-android_default_version_name = "106.0.5249.126"
-android_default_version_code = "5249126$$"
+android_default_version_name = "107.0.5304.54"
+android_default_version_code = "5304054$$"
 ```
 
 `$$` depends on device architecture:
